@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Build the Rose Bowl Aquatics Center preview: Home, Lap Swim, Family Recreational Swim, Water Fitness & Wellness, Swim
-Lessons, Masters Swim Team and Calendars, in the look of rosebowlaquatics.org, with every hour, session, class, practice,
+Lessons, the team pages (Swim Team, Water Polo, Dive Team, Rays, Masters) and Calendars, in the look of rosebowlaquatics.org, with every hour, session, class, practice,
 closure and early closing read live from Pool Relay by finder.js (#finder, .today-board, #week, data-live).
 
 Nothing about WHEN a pool is open is typed here: only prices, ages, ratios, policies, descriptions and facts about the
@@ -19,6 +19,10 @@ MASTERS = "tUrgh3T3PBSjosKGCD3y8v"    # Masters, Competition Pool lane by lane
 REC_TAB = "tLcJFojRzuyDeqaNfAeuKT"        # Family Recreational Swim, week
 FIT = "YmdcazrCwslIbrYSMAHe3P"        # Water Fitness & Wellness, week
 LESSONS_TAB = "3kW9Hqs7rgsmDukChClTRt"    # Swim Lessons, week
+SWIM_TAB = "GJAqqJ9is2xRW6F8YVOHQL"   # Swim Team, Competition Pool lane by lane
+POLO_TAB = "iy9F70sZq6N9ZFdrSlPs1Q"   # Water Polo Team, week (both pools)
+DIVE_TAB = "OlV4FkpT5I0GxYhbdMzMsJ"   # Dive Team, Dive & Rec Pool lane by lane
+RAYS_TAB = "i2vGOoejn4ZbCBMz9hblnn"   # Rays Swim Team, week (both pools)
 RB = "https://rosebowlaquatics.org"
 FAC = "Rose Bowl Aquatics Center"
 ADDRESS = "360 N. Arroyo Blvd., Pasadena, CA 91103"
@@ -47,8 +51,8 @@ def frame(token, title, height=820):
             f'loading="lazy"></iframe></div><p class="credit">Schedule by {out("https://www.poolrelay.com/", "Pool Relay")}</p>')
 
 
-def quote(text, src, label):
-    return f'<blockquote class="quote"><span class="qh">RBAC’s own text, quoted from {out(src, label)}</span>“{E(text)}”</blockquote>'
+def quote(text, src, label, who="RBAC’s own text"):
+    return f'<blockquote class="quote"><span class="qh">{E(who)}, quoted from {out(src, label)}</span>“{E(text)}”</blockquote>'
 
 
 LIVE = '<span class="live-tag">Live</span>'
@@ -61,8 +65,8 @@ MENU = [
         ("Family Recreational Swim", "rec-swim.html"), ("Lap Swim", "lap-swim.html"), ("Therapy Pool", RB + "/therapy-pool"),
         ("Red Cross Training/Lifeguard", RB + "/red-cross"), ("Yoga", RB + "/yoga")]),
     ("Teams", "Our Teams", [
-        ("Dive Team", RB + "/dive-team"), ("Swim Team", RB + "/swim-team"), ("Water Polo Team", RB + "/water-polo"),
-        ("Rays Swim Team", RB + "/rays"), ("Masters Swim Team", "masters.html")]),
+        ("Dive Team", "dive-team.html"), ("Swim Team", "swim-team.html"), ("Water Polo Team", "water-polo.html"),
+        ("Rays Swim Team", "rays.html"), ("Masters Swim Team", "masters.html")]),
     ("Giving", "Giving", [
         ("Events", RB + "/events"), ("Why Donate?", RB + "/support"), ("Ways to Give", RB + "/ways-to-give"),
         ("Directing Your Gift", RB + "/directing-gift"), ("Donation Request", RB + "/donation-request")]),
@@ -144,7 +148,7 @@ ALERTS = f"""<div class="alert" aria-live="polite"><h3>Closures &amp; early clos
 # ── Home ─────────────────────────────────────────────────────────────────────
 TILE_PROGS = [("Swim Lessons", "swim-lessons.html", "#0d77b0"), ("Lap Swim", "lap-swim.html", "#0a5f8f"),
               ("Family Recreational Swim", "rec-swim.html", "#1fa6c4"), ("Water Fitness & Wellness", "water-fitness.html", "#2a7fb8"),
-              ("Masters Swim Team", "masters.html", "#06476e"), ("Dive Team", RB + "/dive-team", "#0b6aa0")]
+              ("Masters Swim Team", "masters.html", "#06476e"), ("Dive Team", "dive-team.html", "#0b6aa0")]
 prog_tiles = "".join(
     (out(h, f"<span>{E(l)}</span>", "water ext") if h.startswith("http") else f'<a class="water" href="{h}"><span>{E(l)}</span></a>')
     for l, h, _ in TILE_PROGS)
@@ -513,6 +517,286 @@ page("masters.html", "Masters Swim Team", "Masters Swim", f"""
 </div></section>
 """, [("overview", "Overview"), ("workouts", "Workout Schedule"), ("collegiate", "Collegiate Incentive")])
 
+# ── Team pages ───────────────────────────────────────────────────────────────
+# Each team's practice times are read live from its training groups in Pool Relay, which were entered from the team's
+# own schedule site (named on each page). Nothing about when a group practices is typed here.
+ORG = "Rose Bowl Aquatics"
+
+
+def grp_rows(team, pool, rows):
+    """rows: (label, group under the team, note). One live 'when' cell per training group."""
+    return "".join(f'<tr><th>{E(l)}{f"<small>{E(n)}</small>" if n else ""}</th><td class="when" '
+                   f'{live("when", pool, group=f"{ORG} / {team} / {g}")}>…</td></tr>' for l, g, n in rows)
+
+
+def team_site(href, label, what):
+    return f'<div class="c-cyan"><h3>Team website</h3><p>{what}</p>{out(href, label)}</div>'
+
+
+# ── Swim Team ────────────────────────────────────────────────────────────────
+GO = "https://www.gomotionapp.com/team/rose/page"
+SWIM_GROUPS = [
+    ("National", "National", "Senior Division · high school · Futures qualifying time"),
+    ("Senior 3", "Senior 3", "Senior Division · high school · two Sectional times"),
+    ("Senior 2", "Senior 2", "Senior Division · high school · Summer Age Group qualifier"),
+    ("Senior 1", "Senior 1", "Senior Division · high school"),
+    ("13-14 Gold", "13-14 Gold", "Spring Age Group Championships qualifier"),
+    ("13-14 Silver", "13-14 Silver", ""), ("13-14 Bronze", "13-14 Bronze", ""), ("13 & Over Red", "13 & Over Red", ""),
+    ("11-12 Gold", "11-12 Gold", ""), ("11-12 Silver", "11-12 Silver", ""), ("11-12 Bronze", "11-12 Bronze", ""),
+    ("11-12 Red", "11-12 Red", ""),
+    ("10 & Under Gold", "10 & Under Gold", ""), ("10 & Under Silver", "10 & Under Silver", ""),
+    ("10 & Under Bronze", "10 & Under Bronze", ""), ("10 & Under Red", "10 & Under Red", ""),
+]
+ST = "Swim Team"
+page("swim-team.html", "Swim Team", "Swim Team", f"""
+<section class="band" id="overview"><div class="wrap two">
+  <div><h2 class="sec-title">Swim Teams</h2>
+    <p>Rose Bowl Aquatics is a nationally renowned swim team. Success at the highest level of competition comes from respect, hard
+      work, discipline and dedication, and the team focuses on developing the whole student-athlete in a safe, supportive team
+      environment, in and out of the pool.</p>
+    <p><b>Rose Buds</b> is the pre-competitive team: an introduction to practices, team culture and competition for swimmers 6 to 17 who
+      can swim freestyle and backstroke and have been introduced to butterfly and breaststroke. The <b>competitive team</b> is for
+      swimmers 6 and older who swim all four strokes legally with proper turns and dives. Swimmers new to competition start with a
+      tryout of about ten minutes; coaches then suggest a group and review progress at the end of each month.</p>
+    <details class="acc"><summary>Core values</summary><div><ul><li>Fun</li><li>Team</li><li>Accountability</li><li>Train for Life</li><li>Humble Success</li></ul></div></details>
+  </div>
+  <div class="cardstack">
+    <div class="c-red"><h3>Register for Tryouts</h3>{out("https://anc.apm.activecommunities.com/rosebowlaquatics/activity/search?onlineSiteId=0&activity_select_param=2&activity_category_ids=15&viewMode=list", "Register")}</div>
+    {team_site(GO + "/home", "gomotionapp.com/team/rose", "Training schedule, meet schedule, group descriptions and team registration, on the team's own SportsEngine Motion site.")}
+  </div>
+</div></section>
+
+<section class="band tint" id="practice"><div class="wrap">
+  <h2 class="sec-title">Practice times by training group {LIVE}</h2>
+  <p class="lede">Each group's usual swims in the Competition Pool, read from the pool schedule. Dryland is out of the water and isn't listed.</p>
+  <div class="tblwrap"><table class="prog">{grp_rows(ST, "comp", SWIM_GROUPS)}</table></div>
+  <h4>Changed days ahead</h4><div class="adjusted" {live("exceptions", "comp", group=f"{ORG} / {ST}")}><p class="small muted">None in the published schedule.</p></div>
+  <h4>Home meets at RBAC {LIVE}</h4><p {live("dates", "comp", group=f"{ORG} / {ST}", title="Block Party Intrasquad|Rose IMX Meet", empty="None on the pool schedule in the coming months.")}>…</p>
+  <div class="whatsnew"><b class="k">Where these times come from</b>The team publishes its practice schedule as a PDF on
+    {out(GO + "/newsletter/2023-training-schedule-", "its training schedule page")}. Pool Relay holds each group's swims inside the
+    water RBAC's pool calendar gives the Swim Team, so the pool, the team and lap swimmers read the same lanes. Where the team's
+    sheet starts a swim before the pool calendar gives the team the water, this page shows the pool calendar's time. How many lanes
+    each group gets is Pool Relay's estimate; the team's schedule doesn't say.</div>
+  {ALERTS}
+</div></section>
+
+<section class="band" id="calendar"><div class="wrap">
+  <h2 class="sec-title">Lane by lane {LIVE}</h2>
+  <p class="small muted">Swim Team groups only, lane by lane. Pick a day; use the filter row to show one group, and <b>Subscribe</b> for an
+    email when that group's practices change.</p>
+  {frame(SWIM_TAB, "Rose Bowl Swim Team", 900)}
+</div></section>
+
+<section class="band tint" id="groups"><div class="wrap">
+  <h2 class="sec-title">Group Requirements and Descriptions</h2>
+  <p>Groups run by age and ability across four divisions (Senior, 13-14, 11-12 and 10 &amp; Under), each with Gold, Silver, Bronze
+    and Red levels below the senior groups. Placement is at the coaches' discretion. The full requirements for each group are in the
+    team's {out(GO + "/newsletter/2023-group-descriptions", "group descriptions")}.</p>
+  <details class="acc"><summary>Rose Buds levels</summary><div><ul>
+    <li><b>Rose 1:</b> swims 25 yards without stopping; water safety, kicking all four strokes, side breathing, body position.</li>
+    <li><b>Rose 2:</b> 25 yards of freestyle and of backstroke; all four strokes taught through drills.</li>
+    <li><b>Rose 3:</b> legal stroke and IM turns, and dives using the USA Swimming dive progression.</li></ul></div></details>
+  <h2 class="sec-title" style="margin-top:28px">Swim Team Fees</h2>
+  <p>All registration fees and season rates are paid in full before a swimmer enters the water. Competitive team: a monthly membership
+    fee to RBAC, a semi-annual family commitment to the Booster Club, and annual USA Swimming registration. Rose Buds pricing is by
+    group, with an eight-week fee.</p>
+  <div class="tblwrap"><table class="fees"><tbody>
+    <tr><th>Sports Engine Motion</th><td>$60</td></tr>
+    <tr><th>USA Swimming Flex membership (12 &amp; under)</th><td>$30 a year</td></tr>
+    <tr><th>USA Swimming Premium membership (6 and up)</th><td>$80 a year</td></tr></tbody></table></div>
+  <p class="small">Financial assistance: {out(RB + "/scholarships", "rosebowlaquatics.org/scholarships")}.</p>
+</div></section>
+
+<section class="band" id="coaches"><div class="wrap">
+  <h2 class="sec-title">Coaches</h2>
+  <p>Head Coach Andrew Nguyen, with Scott Player, Matt Cervantes, Katherine Fisher, Katherine Tse, Jordan Morillo, Jeanette MacDougall
+    (Rose Buds), Hector Jimenez, David Jimenez, Cameron Ware, Michael Wong and Alex Moothart.</p>
+  <p class="small">Questions: {out("mailto:anguyen@rosebowlaquatics.org", "contact the head coach")} · Rose Buds:
+    {out("mailto:jmacdougall@rosebowlaquatics.org", "email the Rose Buds team")} · Booster Club and policies:
+    {out(GO + "/documents", "team documents")}</p>
+</div></section>
+""", [("overview", "Overview"), ("practice", "Practice times"), ("calendar", "Calendar"), ("groups", "Groups & fees"),
+      ("coaches", "Coaches")])
+
+# ── Water Polo Team ──────────────────────────────────────────────────────────
+WPT = "Water Polo Team"
+WP_SHEET = "https://docs.google.com/spreadsheets/d/17UqEF5NKlFPGQZvh8AkeMXMXa3-FcM4oiXRn0fkIOaw/edit?usp=sharing"
+WP_SITE = "https://rosebowlwaterpolo.com/"
+WP_PRE = [("Splashball", "Splash Ball", "Ages 4–8 · shallow end of the Dive & Rec Pool"),
+          ("Intro to Water Polo 1 & 2", "Intro 1", "Ages 8–13 · dive well of the Dive & Rec Pool"),
+          ("Gold Academy 1 & 2", "Gold Academy 1", "Ages 8–13 · after Intro, or by coach's recommendation")]
+WP_TEAMS = [("10U Coed", "10U Coed", ""), ("12U Boys", "12U Boys", ""), ("12U Girls", "12U Girls", ""),
+            ("14U Boys", "14U Boys", ""), ("14U Girls", "14U Girls", ""),
+            ("HS Boys Group 1", "HS Boys Group 1", "Some practices are at La Cañada High School"),
+            ("HS Boys Group 2", "HS Boys Group 2", "Some practices are at Occidental College")]
+page("water-polo.html", "Water Polo Team", "Water Polo Team", f"""
+<section class="band" id="overview"><div class="wrap two">
+  <div><h2 class="sec-title">Water Polo - All Ages &amp; Levels</h2>
+    <p>Student-athletes at the RBAC are led by a coaching staff that includes current local high school, collegiate, zone team and
+      National Team coaches. Athletes begin with Splashball and Intro to Water Polo, which build water safety, confidence and the key
+      skills of the game. Gold Academy is the next step: endurance, strength, speed and water polo skills. After Gold Academy,
+      athletes are invited to try out for the travel teams, fielded at 10 &amp; under, 12 &amp; under, 14 &amp; under, 16 &amp; under
+      and 18 &amp; under.</p>
+    <p>The program has placed over 100 players on U.S. National Team rosters, has medaled 14 times at national events and won six
+      national championships. No prior experience is required.</p>
+  </div>
+  <div class="cardstack">
+    <div class="c-red"><h3>Ready to Sign Up</h3><p>New players attend a practice before registering.</p>{out("mailto:pbeemer@rosebowlaquatics.org", "Contact Coach Pat Beemer")}</div>
+    {team_site(WP_SITE, "rosebowlwaterpolo.com", "Rose Bowl Water Polo Club's own site: teams, rosters, registration and news. Its practice schedule is the sheet linked from RBAC's page.")}
+  </div>
+</div></section>
+
+<section class="band tint" id="practice"><div class="wrap">
+  <h2 class="sec-title">Practice times {LIVE}</h2>
+  <p class="lede">Each group's usual practices, read from the pool schedule: pre-teams in the Dive &amp; Rec Pool, competition teams in
+    the Competition Pool.</p>
+  <h3>Pre-teams</h3><div class="tblwrap"><table class="prog">{grp_rows(WPT, "ctr", WP_PRE)}</table></div>
+  <h3>Competition teams</h3><div class="tblwrap"><table class="prog">{grp_rows(WPT, "ctr", WP_TEAMS)}</table></div>
+  <h4>All water polo water on the pool calendar</h4><p {live("when", "ctr", group=f"{ORG} / {WPT}")}>…</p>
+  <div class="whatsnew"><b class="k">Where these times come from</b>The club's practice schedule is a Google Sheet,
+    {out(WP_SHEET, "linked from RBAC's Water Polo page")}; the team's own site, {out(WP_SITE, "rosebowlwaterpolo.com")}, doesn't list
+    practices. Pool Relay holds each group inside the water RBAC's pool calendar gives water polo. The sheet covers the fall season, so
+    group times end with it; after that the pool calendar's water polo blocks stand until the next season's sheet is entered. How many
+    lanes each group gets is Pool Relay's estimate.</div>
+  {quote("Coaches may make adjustments to their individual age group and practice group plans, make sure to ask your coach about any changes.", RB + "/water-polo", "the Water Polo page")}
+  {ALERTS}
+</div></section>
+
+<section class="band" id="calendar"><div class="wrap">
+  <h2 class="sec-title">This week {LIVE}</h2>
+  <p class="small muted">Water polo only, both pools. Each block names its pool. Use the filter row to show one group, and <b>Subscribe</b>
+    for an email when its practices change.</p>
+  {frame(POLO_TAB, "Rose Bowl Water Polo", 860)}
+</div></section>
+
+<section class="band tint" id="programs"><div class="wrap">
+  <h2 class="sec-title">Programs and Fees</h2>
+  <div class="tblwrap"><table class="prog"><thead><tr><th>Program</th><th>Ages</th><th>Fee</th></tr></thead><tbody>
+    <tr><th>Splashball<small>Coed, non-contact, in the shallow end</small></th><td>4–8</td><td>$250 a session (8 classes)</td></tr>
+    <tr><th>Intro to Water Polo 1 &amp; 2<small>Deep water; four laps of head-down freestyle to start</small></th><td>8–13</td><td>$167 for 8 sessions</td></tr>
+    <tr><th>Gold Academy 1 &amp; 2<small>Highest pre-competitive tier; coach assessment required</small></th><td>8–13</td><td>$410 a session (8 weeks)</td></tr>
+    <tr><th>Competition teams<small>10U through 18U, boys and girls</small></th><td>8–18</td><td>Monthly, all-inclusive</td></tr></tbody></table></div>
+  <p class="small">Competition team fees are paid monthly to RBAC and include tournament and league entry, except major events like the
+    National Junior Olympics. Ages follow the USA Water Polo age cutoff. Pre-teams sign-up: Hannah Landswick,
+    {out("mailto:hlandswick@rosebowlaquatics.org", "hlandswick@rosebowlaquatics.org")}. Financial assistance:
+    {out(RB + "/scholarships", "rosebowlaquatics.org/scholarships")}.</p>
+  <div class="faqhead"><h3>FAQs</h3></div>
+  <div class="faq">
+    <details class="acc"><summary>Do I have to know how to play before joining?</summary><div>No. Most athletes come with little or no experience and learn through Intro to Water Polo and Gold Academy.</div></details>
+    <details class="acc"><summary>When can I sign up?</summary><div>Any time. Practices run year-round, and you're welcome to attend one before joining.</div></details>
+    <details class="acc"><summary>Where are games played?</summary><div>Mostly between San Clemente, Riverside and Santa Barbara, occasionally San Diego. Junior Olympics alternate between Northern and Southern California.</div></details>
+    <details class="acc"><summary>How do I register?</summary><div>Register with USA Water Polo, then with RBAC at the front desk (fees are paid monthly). Only fully registered players practice and play.</div></details>
+  </div>
+</div></section>
+""", [("overview", "Overview"), ("practice", "Practice times"), ("calendar", "Calendar"), ("programs", "Programs & fees")])
+
+# ── Dive Team ────────────────────────────────────────────────────────────────
+DT = "Dive Team"
+DV_SITE = "https://www.rosebowldiving.org/"
+DV_GROUPS = [("National Team (Black)", "National Team", "Invitation only · 14 & over"),
+             ("Jr National Team (Black)", "Jr National Team", "Invitation only · 13 & under"),
+             ("Red Team", "Red Team", "High school · 14 & over"), ("Blue Team", "Blue Team", "Middle school · 11–14"),
+             ("White Team", "White Team", "12 & under"), ("Green Team", "Green Team", "8 & under · invitation only"),
+             ("Orange Team (Rising Stars)", "Orange Team", "13 & under · first step after lessons")]
+page("dive-team.html", "Dive Team", "Dive Team", f"""
+<section class="band" id="overview"><div class="wrap two">
+  <div><h2 class="sec-title">Ready to Dive In</h2>
+    <p>The Rose Bowl Aquatics Center Dive Program offers year-round introductory, intermediate and advanced lessons, plus competitive
+      Novice and Junior Olympic teams. The Rose Bowl Dive Team has ranked among the nation's top teams since the center opened, and most
+      of its high school graduates continue to dive in college. For beginners, all you need is a swimsuit, basic swimming skills and a
+      desire to have fun.</p>
+    <p>Divers practice at the deep end (18 feet) of the Dive &amp; Rec Pool, on 1-meter and 3-meter springboards and the tower. The team's
+      current age range is 8 to 17. Head Coach: Jean-Luc Miralda.</p>
+  </div>
+  <div class="cardstack">
+    <div class="c-red"><h3>Interested in Lessons</h3>{out("https://anc.apm.activecommunities.com/rosebowlaquatics/activity/search?onlineSiteId=0&activity_select_param=2&activity_category_ids=43&viewMode=list", "Lesson Sign-Up")}</div>
+    {team_site(DV_SITE, "rosebowldiving.org", "Rose Bowl Diving's own site: team registration, dive groups, and the day-by-day practice schedule.")}
+  </div>
+</div></section>
+
+<section class="band tint" id="practice"><div class="wrap">
+  <h2 class="sec-title">Team practice times by group {LIVE}</h2>
+  <p class="lede">Each group's usual practices in the dive well, read from the pool schedule.</p>
+  <div class="tblwrap"><table class="prog">{grp_rows(DT, "rec", DV_GROUPS)}</table></div>
+  <h4>All diving on the pool calendar</h4><p {live("when", "rec", group=f"{ORG} / {DT}")}>…</p>
+  <h4>Changed days ahead</h4><div class="adjusted" {live("exceptions", "rec", group=f"{ORG} / {DT}")}><p class="small muted">None in the published schedule.</p></div>
+  <div class="whatsnew"><b class="k">Where these times come from</b>Rose Bowl Diving publishes practices day by day on
+    {out(DV_SITE + "schedule", "its schedule page")}. Pool Relay holds each group inside the dive-well water RBAC's pool calendar gives
+    the Dive Team, so where the team's schedule runs later than the pool calendar, this page shows the pool calendar's time. Which
+    lane of the dive well each group is drawn in is Pool Relay's estimate. Once the team's published schedule ends, the pool
+    calendar's diving blocks stand until the next one is entered.</div>
+  {quote("Training days are flexible and vary based on the team! Check our calendar for dates.", RB + "/dive-team", "the Dive Team page")}
+  {ALERTS}
+</div></section>
+
+<section class="band" id="calendar"><div class="wrap">
+  <h2 class="sec-title">The dive well, lane by lane {LIVE}</h2>
+  <p class="small muted">Dive Team only. Pick a day; use the filter row to show one group, and <b>Subscribe</b> for an email when its
+    practices change.</p>
+  {frame(DIVE_TAB, "Rose Bowl Dive Team", 900)}
+</div></section>
+
+<section class="band tint" id="programs"><div class="wrap">
+  <h2 class="sec-title">Programs and Training Groups</h2>
+  <ul><li><b>Learn to Dive Day</b> (ages 6–12): a 1½-hour intro for anyone who can swim one lap comfortably in deep water. $35.</li>
+    <li><b>Lessons Group</b> (13 &amp; under): no experience needed; mechanics, body control and confidence. $250 a month.</li>
+    <li><b>Team groups</b>: $275–$475 a month depending on the team, plus $50 a year team registration and booster fees (Orange team and
+      above). USA Diving membership is required.</li></ul>
+  <p class="small">Off-site tower training is available on select weekends. The Breaking Barriers Dive Grant funds Learn to Dive Days,
+    USA Diving memberships and meet fees for local athletes: {out(DV_SITE + "about/breaking-barriers-dive-grant/78697", "about the grant")}.</p>
+  <div class="faqhead"><h3>FAQs</h3></div>
+  <div class="faq">
+    <details class="acc"><summary>Is there a minimum age?</summary><div>No, but divers need basic swim skills: they practice in 18 feet of water and must surface and return to the deck on their own.</div></details>
+    <details class="acc"><summary>What's the difference between beginner, novice and J.O.?</summary><div>A beginner is learning basic skills. A novice has enough skills to join the team and compete locally. A Junior Olympic diver has moved beyond novice and competes regionally and nationally.</div></details>
+    <details class="acc"><summary>Are you closed in winter?</summary><div>No. Programs run year-round in heated pools, with two hot tubs by the boards.</div></details>
+    <details class="acc"><summary>How do I get in touch?</summary><div>Call the front desk at 626-564-0330 x404 or email {out("mailto:jmiralda@rosebowlaquatics.org", "the dive coach")}.</div></details>
+  </div>
+</div></section>
+""", [("overview", "Overview"), ("practice", "Practice times"), ("calendar", "Calendar"), ("programs", "Programs & FAQs")])
+
+# ── Rays Swim Team ───────────────────────────────────────────────────────────
+RT = "Rays Swim Team"
+page("rays.html", "Rays Swim Team", "Rays Swim Team", f"""
+<section class="band" id="overview"><div class="wrap two">
+  <div><h2 class="sec-title">The Rays Swim Team</h2>
+    <p>The Rays Swim Team gives swimmers with special needs the opportunity to learn a sport and be part of a team. The skills,
+      self-confidence and empowerment gained in sports carry into daily life, helping athletes become healthier, happier and more
+      productive students and individuals.</p>
+    <p>Practices are structured so each swimmer trains with peers by age and ability, and each practice day swimmers choose a 30- or
+      60-minute session within the team's practice time. The Rays compete in intra-squad meets through the year, and a parent volunteer
+      group plans social activities. All ages are welcome to try out.</p>
+  </div>
+  <div class="cardstack">
+    <div class="c-red"><h3>Fees</h3><p class="price">$87</p><p>per month</p>{out("https://anc.apm.activecommunities.com/rosebowlaquatics/membership/search?onlineSiteId=0&from_original_cui=true&keyword=", "Register")}</div>
+    <div class="c-cyan"><h3>Tryouts</h3><p>Email {out("mailto:rays@rosebowlaquatics.org", "rays@rosebowlaquatics.org")} or call (626) 564-0330 ext. 419.</p></div>
+  </div>
+</div></section>
+
+<section class="band tint" id="practice"><div class="wrap">
+  <h2 class="sec-title">Practice Information and Schedule {LIVE}</h2>
+  <div class="hours-grid">
+    <div class="hbox"><h3>Team practice time</h3><p style="margin:0;font-size:17px" {live("when", "ctr", group=f"{ORG} / {RT}", gap=-1)}>…</p>
+      <h4>Changed days ahead</h4><div class="adjusted" {live("exceptions", "ctr", group=f"{ORG} / {RT}")}><p class="small muted">None in the published schedule.</p></div></div>
+    <div>{quote("The Rays Swim Team has 3 practices per week and swimmers have an option for a 30 minute or 60 minute session each practice day during allocated practice times.", RB + "/rays", "the Rays Swim Team page")}
+      <p class="small">The Rays don't have a separate team website. RBAC's page types the practice times by hand; here they're read from
+        the Rays' bookings on the pool calendar, which say which pool and how many lanes.</p></div>
+  </div>
+  {ALERTS}
+</div></section>
+
+<section class="band" id="calendar"><div class="wrap">
+  <h2 class="sec-title">This week {LIVE}</h2>
+  <p class="small muted">Rays only, both pools; each block names its pool. <b>Subscribe</b> in the filter row for an email when a practice changes.</p>
+  {frame(RAYS_TAB, "Rose Bowl Rays Swim Team", 760)}
+</div></section>
+
+<section class="band tint" id="coaches"><div class="wrap">
+  <h2 class="sec-title">Coaches</h2>
+  <p>Cameron Lee, Cassie Morla and Amanda Tuttle. {out("mailto:clee@rosebowlaquatics.org", "Contact us")}.</p>
+  <p class="small">Financial assistance: {out(RB + "/scholarships", "rosebowlaquatics.org/scholarships")}.</p>
+</div></section>
+""", [("overview", "Overview"), ("practice", "Practice times"), ("calendar", "Calendar"), ("coaches", "Coaches")])
+
 # ── Calendars ────────────────────────────────────────────────────────────────
 page("calendars.html", "Calendars", "Calendars", f"""
 <section class="band" id="before"><div class="wrap">
@@ -560,4 +844,4 @@ page("calendars.html", "Calendars", "Calendars", f"""
 </div></section>
 """, [("before", "Why one schedule"), ("comp", "Competition Pool"), ("dive", "Dive & Rec Pool"), ("week-cal", "Both pools, by week")])
 
-print("built 7 pages, assets", VER)
+print("built 11 pages, assets", VER)
