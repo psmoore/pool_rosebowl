@@ -20,4 +20,9 @@ RBAC's schedule that are labeled as quotes. `check.py` fails if a time, weekday 
   are cut by time and counted as one session. Timed notices on the whole center ("Closed for UCLA football", "Closes at 2pm") read
   as changed days; "Pool change (closed)" stays in the Competition Pool's day as a closed block.
 - Pool Relay views: `FgHEbQHJyQ9xrnxBa1FmYt` (Competition Pool, lane by lane), `430wOk0AHmfQrpXaag7Hrs` (Dive & Rec Pool, lane by
-  lane), `ldh1B3ldemNOlqrz69lAVa` (both pools, week; feeds every live element).
+  lane), `ldh1B3ldemNOlqrz69lAVa` (both pools, week; feeds every live element). These three are the all-program calendars,
+  on Home and Calendars.
+- Each program page embeds a tab locked to that program's group, so its calendar shows that program only:
+  Lap Swim `lGMh1lF6ZPQkYH4AEKEwC9` (Competition Pool) and `NYCzecS1JPKyAfMrxcTKQs` (Dive & Rec Pool), Masters
+  `tUrgh3T3PBSjosKGCD3y8v`, Family Recreational Swim `tLcJFojRzuyDeqaNfAeuKT`, Water Fitness & Wellness
+  `YmdcazrCwslIbrYSMAHe3P`, Swim Lessons `3kW9Hqs7rgsmDukChClTRt`.

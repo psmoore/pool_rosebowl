@@ -12,6 +12,13 @@ E = html.escape
 COMP = "FgHEbQHJyQ9xrnxBa1FmYt"  # Pool Relay tab: Rose Bowl Competition Pool, lane by lane
 DIVE = "430wOk0AHmfQrpXaag7Hrs"  # Pool Relay tab: Rose Bowl Dive & Rec Pool, lane by lane
 WEEK = "ldh1B3ldemNOlqrz69lAVa"  # Pool Relay tab: Rose Bowl Aquatics Center, week (both pools; feeds every live element)
+# A program's page embeds a tab locked to that program's group, so its calendar shows only that program.
+LAP_COMP = "lGMh1lF6ZPQkYH4AEKEwC9"   # Lap Swim, Competition Pool lane by lane
+LAP_DIVE = "NYCzecS1JPKyAfMrxcTKQs"   # Lap Swim, Dive & Rec Pool lane by lane
+MASTERS = "tUrgh3T3PBSjosKGCD3y8v"    # Masters, Competition Pool lane by lane
+REC_TAB = "tLcJFojRzuyDeqaNfAeuKT"        # Family Recreational Swim, week
+FIT = "YmdcazrCwslIbrYSMAHe3P"        # Water Fitness & Wellness, week
+LESSONS_TAB = "3kW9Hqs7rgsmDukChClTRt"    # Swim Lessons, week
 RB = "https://rosebowlaquatics.org"
 FAC = "Rose Bowl Aquatics Center"
 ADDRESS = "360 N. Arroyo Blvd., Pasadena, CA 91103"
@@ -247,9 +254,9 @@ page("lap-swim.html", "Lap Swim", "Lap Swim", f"""
   {quote("The pool is set for short course except on Mondays, Wednesdays and Fridays.", RB + "/lap-swim", "the Lap Swim page")}
   <div class="today-board" data-view="{WEEK}" data-pool="comp"><p class="muted">Loading today…</p></div>
   <h3>Lane by lane {LIVE}</h3>
-  <p class="small muted">Pick a day to see every lane: lap swim, Masters, Swim Team, Rays and Water Polo. Lane numbers in this pool are
+  <p class="small muted">Lap swim only, lane by lane: pick a day to see which lanes are open for laps. Lane numbers in this pool are
     Pool Relay's placement of the lane counts RBAC's calendar gives.</p>
-  {frame(COMP, "Rose Bowl Competition Pool, lane by lane", 900)}
+  {frame(LAP_COMP, "Rose Bowl lap swim, Competition Pool", 900)}
 </div></section>
 
 <section class="band" id="dive"><div class="wrap">
@@ -258,7 +265,8 @@ page("lap-swim.html", "Lap Swim", "Lap Swim", f"""
     17'. Safe dive entry is allowed in lanes 11–20.</p>
   <div class="today-board" data-view="{WEEK}" data-pool="rec"><p class="muted">Loading today…</p></div>
   <h3>Lane by lane {LIVE}</h3>
-  {frame(DIVE, "Rose Bowl Dive & Rec Pool, lane by lane", 900)}
+  <p class="small muted">Lap swim only, lane by lane.</p>
+  {frame(LAP_DIVE, "Rose Bowl lap swim, Dive & Rec Pool", 900)}
 </div></section>
 
 <section class="band tint" id="faqs"><div class="wrap">
@@ -323,8 +331,8 @@ page("rec-swim.html", "Family Recreational Swim", "Family Recreational Swim", f"
 
 <section class="band" id="calendar"><div class="wrap">
   <h2 class="sec-title">On the calendar {LIVE}</h2>
-  <p class="small muted">Pick <b>Family Recreational Swim</b> in the filter row to see only rec swim, and <b>Subscribe</b> to get an email when its sessions change.</p>
-  {frame(WEEK, "Rose Bowl Aquatics Center, week", 860)}
+  <p class="small muted">Family Recreational Swim only. <b>Subscribe</b> in the filter row to get an email when its sessions change.</p>
+  {frame(REC_TAB, "Rose Bowl Family Recreational Swim", 860)}
 </div></section>
 
 <section class="band tint" id="rules"><div class="wrap">
@@ -392,8 +400,8 @@ page("water-fitness.html", "Water Fitness & Wellness", "Water Fitness Programs",
   <div id="week" data-view="{WEEK}" data-pool="ctr" data-pools="Dive &amp; Rec Pool" data-kind="fit"><p class="muted">Loading the week…</p></div>
   {ALERTS}
   <h3>On the calendar</h3>
-  <p class="small muted">Pick <b>Water Fitness &amp; Wellness</b> in the filter row, then <b>Subscribe</b> for an email when a class time changes.</p>
-  {frame(WEEK, "Rose Bowl Aquatics Center, week", 860)}
+  <p class="small muted">Water fitness classes only. <b>Subscribe</b> in the filter row for an email when a class time changes.</p>
+  {frame(FIT, "Rose Bowl Water Fitness & Wellness", 860)}
 </div></section>
 
 <section class="band tint" id="faqs"><div class="wrap">
@@ -448,12 +456,18 @@ page("swim-lessons.html", "Swim Lessons", "Swim Lessons", f"""
   {ALERTS}
 </div></section>
 
+<section class="band" id="calendar"><div class="wrap">
+  <h2 class="sec-title">On the calendar {LIVE}</h2>
+  <p class="small muted">Swim lessons only. <b>Subscribe</b> in the filter row for an email when a lesson block changes.</p>
+  {frame(LESSONS_TAB, "Rose Bowl Swim Lessons", 860)}
+</div></section>
+
 <section class="band" id="levels"><div class="wrap">
   <h2 class="sec-title">Levels</h2>
   <div class="tblwrap"><table class="prog"><thead><tr><th>Program</th><th>Ages</th><th>Ratio</th><th>Levels</th></tr></thead><tbody>{levrows}</tbody></table></div>
   <p class="small muted">Entry requirements for each level are on {out(RB + "/swim-lessons-programs", "RBAC's Swim Lessons page")}.</p>
 </div></section>
-""", [("overview", "Overview"), ("times", "Lesson times"), ("levels", "Levels")])
+""", [("overview", "Overview"), ("times", "Lesson times"), ("calendar", "Calendar"), ("levels", "Levels")])
 
 # ── Masters Swim Team ────────────────────────────────────────────────────────
 M = "Masters Swim Team"
@@ -485,8 +499,9 @@ page("masters.html", "Masters Swim Team", "Masters Swim", f"""
         See {out(RB + "/masters", "RBAC's Masters page")}.</p></div>
   </div>
   <h3>Lane by lane {LIVE}</h3>
-  <p class="small muted">The Competition Pool, every lane. Lane numbers are Pool Relay's placement of the lane counts on RBAC's calendar.</p>
-  {frame(COMP, "Rose Bowl Competition Pool, lane by lane", 900)}
+  <p class="small muted">Masters workouts only, lane by lane. Lane numbers are Pool Relay's placement of the lane counts on RBAC's calendar.
+    <b>Subscribe</b> in the filter row for an email when a workout changes.</p>
+  {frame(MASTERS, "Rose Bowl Masters", 900)}
 </div></section>
 
 <section class="band" id="collegiate"><div class="wrap">
